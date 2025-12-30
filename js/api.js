@@ -4,11 +4,19 @@
  */
 const api = {
     // API基础地址
+
+// own backend 
    // baseUrl: "http://localhost:5000/api",
    // audioBaseUrl: "http://localhost:5000/audio",
-
-    baseUrl: "https://oral-lea-celia-personal-project-5ed71260.koyeb.app/api",
-    audioBaseUrl: "https://oral-lea-celia-personal-project-5ed71260.koyeb.app/audio",
+   // baseUrl: "https://oral-lea-celia-personal-project-5ed71260.koyeb.app/api",
+  //  audioBaseUrl: "https://oral-lea-celia-personal-project-5ed71260.koyeb.app/audio",
+    
+// shared backend 
+  //  baseUrl: "http://localhost:5000/api/tts",
+   // audioBaseUrl: "http://localhost:5000/api/tts/audio",
+    
+    baseUrl: "https://backend-all-6q0a.onrender.com/api/tts",
+    audioBaseUrl: "https://backend-all-6q0a.onrender.com/api/tts/audio",
     /**
      * 分句接口
      * @param {string} text - 输入文本
