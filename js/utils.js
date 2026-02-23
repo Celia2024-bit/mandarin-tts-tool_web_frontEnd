@@ -122,7 +122,7 @@ const utils = {
         if (sentences.length === 0) {
             sentenceList.innerHTML = `
                 <div class="sentence-list__empty">
-                    没有检测到可分割的句子
+                    没有检测到可分割的句子 / No sentences detected
                 </div>
             `;
             return;
@@ -152,7 +152,7 @@ const utils = {
         const { sentenceList } = this.elements;
         sentenceList.innerHTML = `
             <div class="sentence-list__empty">
-                点击"Process Text"生成句子列表
+                点击"Process Text"生成句子列表 / Click "Process Text" to generate sentence list
             </div>
         `;
     },

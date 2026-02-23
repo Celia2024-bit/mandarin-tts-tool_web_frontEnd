@@ -95,6 +95,20 @@ window.app = {
         });
     },
 
+    // 检测文本语言（中文 or 英文）
+    detectLanguage(text) {
+        const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+        const totalChars = text.replace(/\s/g, '').length;
+        // 超过20%是中文字符就判断为中文
+        return (chineseChars / totalChars) > 0.2 ? 'zh' : 'en';
+    },
+
+    // 英文本地分句（按 . ! ? 分割，后端分句只支持中文标点）
+    splitEnglishText(text) {
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+        return sentences.map(s => s.trim()).filter(s => s.length > 0);
+    },
+
     // 处理文本（分句+生成全文音频）
     async processText() {
         const { state, elements } = utils;
@@ -115,17 +129,31 @@ window.app = {
         utils.updateStatus('Processing: Splitting text into sentences...', 'processing');
 
         try {
-            // 1. 调用API分句
-            const splitResult = await api.splitText(text);
-            state.sentences = splitResult.sentences;
-            utils.renderSentenceList(splitResult.sentences);
-            
-            // 2. 生成全文音频
-            utils.updateStatus('Processing: Generating full text audio...', 'processing');
+            // 检测语言
+            const lang = this.detectLanguage(text);
+
+            let sentences;
+            if (lang === 'en') {
+                // 英文：前端本地分句，不调用后端split-text（后端只支持中文标点）
+                sentences = this.splitEnglishText(text);
+                state.sentences = sentences;
+                utils.renderSentenceList(sentences);
+                utils.updateStatus(`Processing: Generating full audio (English, ${sentences.length} sentences)...`, 'processing');
+            } else {
+                // 中文：调用后端分句
+                utils.updateStatus('Processing: Splitting text into sentences...', 'processing');
+                const splitResult = await api.splitText(text);
+                sentences = splitResult.sentences;
+                state.sentences = sentences;
+                utils.renderSentenceList(sentences);
+                utils.updateStatus('Processing: Generating full text audio...', 'processing');
+            }
+
+            // 生成全文音频（中英文都走后端）
             const audioResult = await api.generateFullAudio(text, state.selectedVoice, state.speedPercent);
             
             state.fullAudioPath = audioResult.audioUrl;
-            utils.updateStatus(`Ready | Generated ${splitResult.count} sentences and full audio`);
+            utils.updateStatus(`Ready | Generated ${sentences.length} sentences and full audio`);
             this.playAudio(true);
 
         } catch (error) {
