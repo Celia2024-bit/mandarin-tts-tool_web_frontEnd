@@ -99,8 +99,16 @@ window.app = {
     detectLanguage(text) {
         const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
         const totalChars = text.replace(/\s/g, '').length;
-        // 超过20%是中文字符就判断为中文
-        return (chineseChars / totalChars) > 0.2 ? 'zh' : 'en';
+        
+        if ((chineseChars / totalChars) > 0.2) return 'zh';
+
+        // 识别法语特征字符 (如 à, é, è, ê, ë, î, ï, ô, û, ù, ç)
+        const frenchChars = (text.match(/[àâæçéèêëîïôœùûüÿ]/gi) || []).length;
+        if (frenchChars > 0 || / (le|la|les|un|une|des|et|est) /i.test(text)) {
+            return 'fr';
+        }
+        
+        return 'en';
     },
 
     // 英文本地分句（按 . ! ? 分割，后端分句只支持中文标点）
@@ -133,7 +141,15 @@ window.app = {
             const lang = this.detectLanguage(text);
 
             let sentences;
-            if (lang === 'en') {
+            if (lang === 'fr') {
+                // 如果当前没选法语语音，强行切到一个法语语音上
+                if (!state.selectedVoice.startsWith("French")) {
+                    state.selectedVoice = "French Female (Denise)";
+                    elements.voiceSelect.value = "French Female (Denise)";
+                    console.log("Auto-switched to French voice");
+                }
+            }
+            if (lang === 'en'|| lang === 'fr') {
                 // 英文：前端本地分句，不调用后端split-text（后端只支持中文标点）
                 sentences = this.splitEnglishText(text);
                 state.sentences = sentences;
